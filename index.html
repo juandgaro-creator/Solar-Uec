@@ -1,0 +1,353 @@
+import React, { useState, useEffect } from 'react';
+import { 
+  Calendar, 
+  Clock, 
+  User, 
+  Gamepad2, 
+  PingPong, 
+  Dice5, 
+  LogOut, 
+  CheckCircle2, 
+  Trash2,
+  ChevronRight,
+  Info
+} from 'lucide-react';
+
+const App = () => {
+  // --- Estados de la Aplicación ---
+  const [user, setUser] = useState(null);
+  const [view, setView] = useState('login'); // login, dashboard, booking, my-reservations
+  const [selectedGame, setSelectedGame] = useState(null);
+  const [reservations, setReservations] = useState([]);
+  const [notification, setNotification] = useState(null);
+
+  // --- Datos de Juegos ---
+  const games = [
+    { 
+      id: 1, 
+      name: 'Ping Pong', 
+      icon: <span className="text-2xl">🏓</span>, 
+      description: 'Mesas profesionales en el área techada.',
+      duration: '30 min',
+      capacity: 4
+    },
+    { 
+      id: 2, 
+      name: 'Xbox Series X', 
+      icon: <Gamepad2 className="w-6 h-6" />, 
+      description: 'Zona Gaming con los últimos lanzamientos.',
+      duration: '60 min',
+      capacity: 2
+    },
+    { 
+      id: 3, 
+      name: 'Parqués', 
+      icon: <Dice5 className="w-6 h-6" />, 
+      description: 'Tableros clásicos para jugar en grupo.',
+      duration: '45 min',
+      capacity: 4
+    },
+    { 
+      id: 4, 
+      name: 'UNO / Cartas', 
+      icon: <span className="text-2xl">🃏</span>, 
+      description: 'Diferentes mazos de cartas disponibles.',
+      duration: '45 min',
+      capacity: 6
+    },
+    { 
+      id: 5, 
+      name: 'Futbolín', 
+      icon: <span className="text-2xl">⚽</span>, 
+      description: 'Acción rápida para dos o cuatro personas.',
+      duration: '20 min',
+      capacity: 4
+    }
+  ];
+
+  // --- Lógica de Notificaciones ---
+  const showNotice = (msg) => {
+    setNotification(msg);
+    setTimeout(() => setNotification(null), 3000);
+  };
+
+  // --- Componentes de Vista ---
+
+  const LoginView = () => {
+    const [email, setEmail] = useState('');
+    const handleLogin = (e) => {
+      e.preventDefault();
+      if (email.includes('@uexternado.edu.co')) {
+        setUser({ name: email.split('@')[0], email });
+        setView('dashboard');
+      } else {
+        showNotice("Por favor usa tu correo institucional.");
+      }
+    };
+
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+        <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 border border-emerald-100">
+          <div className="text-center mb-8">
+            <div className="bg-emerald-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+              <span className="text-white text-2xl font-bold">UE</span>
+            </div>
+            <h1 className="text-2xl font-bold text-gray-800">El Solar - Externado</h1>
+            <p className="text-gray-500 text-sm mt-2">Plataforma de Gestión de Espacios</p>
+          </div>
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Correo Institucional</label>
+              <input 
+                type="email" 
+                required
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all"
+                placeholder="usuario@est.uexternado.edu.co"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+            <button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 rounded-lg shadow-md transition-colors">
+              Ingresar
+            </button>
+          </form>
+          <p className="text-center text-xs text-gray-400 mt-6 uppercase tracking-wider">Reserva • Juega • Conecta</p>
+        </div>
+      </div>
+    );
+  };
+
+  const Dashboard = () => (
+    <div className="p-6 max-w-4xl mx-auto">
+      <header className="flex justify-between items-center mb-8">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-800">Hola, {user.name} 👋</h2>
+          <p className="text-gray-500">¿Qué quieres jugar hoy en El Solar?</p>
+        </div>
+        <button onClick={() => setView('login')} className="p-2 text-gray-400 hover:text-red-500 transition-colors">
+          <LogOut size={24} />
+        </button>
+      </header>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+        <div 
+          onClick={() => setView('booking')}
+          className="bg-emerald-600 p-6 rounded-2xl text-white shadow-lg cursor-pointer transform transition-transform hover:scale-[1.02]"
+        >
+          <Calendar className="mb-4" size={32} />
+          <h3 className="text-xl font-bold">Nueva Reserva</h3>
+          <p className="opacity-80 text-sm">Agenda tu turno en segundos</p>
+        </div>
+        <div 
+          onClick={() => setView('my-reservations')}
+          className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm cursor-pointer transform transition-transform hover:scale-[1.02]"
+        >
+          <Clock className="text-emerald-600 mb-4" size={32} />
+          <h3 className="text-xl font-bold text-gray-800">Mis Turnos</h3>
+          <p className="text-gray-500 text-sm">Tienes {reservations.length} reservas activas</p>
+        </div>
+      </div>
+
+      <h3 className="font-bold text-gray-700 mb-4 flex items-center gap-2">
+        <Info size={18} /> Disponibilidad Actual
+      </h3>
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        {games.map((game, idx) => (
+          <div key={game.id} className={`p-4 flex items-center justify-between ${idx !== games.length - 1 ? 'border-b border-gray-50' : ''}`}>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center text-emerald-600">
+                {game.icon}
+              </div>
+              <div>
+                <p className="font-semibold text-gray-800">{game.name}</p>
+                <p className="text-xs text-gray-500">Sesiones de {game.duration}</p>
+              </div>
+            </div>
+            <span className="text-xs font-medium px-2 py-1 bg-green-100 text-green-700 rounded-full">Disponible</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  const BookingView = () => {
+    const [step, setStep] = useState(1);
+    const [date, setDate] = useState('');
+    const [time, setTime] = useState('');
+
+    const handleConfirm = () => {
+      if (!selectedGame || !date || !time) {
+        showNotice("Completa todos los campos");
+        return;
+      }
+      const newRes = {
+        id: Date.now(),
+        game: selectedGame,
+        date,
+        time,
+      };
+      setReservations([...reservations, newRes]);
+      showNotice("¡Reserva exitosa!");
+      setView('dashboard');
+    };
+
+    return (
+      <div className="p-6 max-w-2xl mx-auto">
+        <div className="flex items-center gap-4 mb-8">
+          <button onClick={() => setView('dashboard')} className="p-2 hover:bg-gray-100 rounded-full">
+            <ChevronRight className="rotate-180" />
+          </button>
+          <h2 className="text-2xl font-bold">Agendar Espacio</h2>
+        </div>
+
+        {step === 1 ? (
+          <div className="space-y-4">
+            <p className="font-medium text-gray-600">1. Selecciona el juego</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {games.map(game => (
+                <div 
+                  key={game.id}
+                  onClick={() => setSelectedGame(game)}
+                  className={`p-4 rounded-xl border-2 transition-all cursor-pointer ${selectedGame?.id === game.id ? 'border-emerald-500 bg-emerald-50' : 'border-gray-100 hover:border-emerald-200'}`}
+                >
+                  <div className="flex items-center gap-3 mb-2">
+                    {game.icon}
+                    <span className="font-bold">{game.name}</span>
+                  </div>
+                  <p className="text-xs text-gray-500">{game.description}</p>
+                </div>
+              ))}
+            </div>
+            <button 
+              disabled={!selectedGame}
+              onClick={() => setStep(2)}
+              className="w-full mt-6 bg-emerald-600 text-white py-3 rounded-xl disabled:opacity-50 font-bold"
+            >
+              Siguiente
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            <div className="bg-emerald-50 p-4 rounded-xl flex items-center gap-3">
+              {selectedGame.icon}
+              <div>
+                <p className="font-bold text-emerald-800">{selectedGame.name}</p>
+                <p className="text-xs text-emerald-600">Estás agendando este espacio</p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Fecha</label>
+                <input 
+                  type="date" 
+                  className="w-full p-3 border rounded-xl"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Hora</label>
+                <select 
+                  className="w-full p-3 border rounded-xl"
+                  value={time}
+                  onChange={(e) => setTime(e.target.value)}
+                >
+                  <option value="">Selecciona una hora</option>
+                  <option value="09:00 AM">09:00 AM</option>
+                  <option value="10:00 AM">10:00 AM</option>
+                  <option value="11:00 AM">11:00 AM</option>
+                  <option value="12:00 PM">12:00 PM</option>
+                  <option value="01:00 PM">01:00 PM</option>
+                  <option value="02:00 PM">02:00 PM</option>
+                  <option value="03:00 PM">03:00 PM</option>
+                  <option value="04:00 PM">04:00 PM</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-8">
+              <button onClick={() => setStep(1)} className="flex-1 py-3 border border-gray-300 rounded-xl font-bold">Volver</button>
+              <button onClick={handleConfirm} className="flex-[2] py-3 bg-emerald-600 text-white rounded-xl font-bold shadow-lg">Confirmar Reserva</button>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const ReservationsView = () => (
+    <div className="p-6 max-w-2xl mx-auto">
+      <div className="flex items-center gap-4 mb-8">
+        <button onClick={() => setView('dashboard')} className="p-2 hover:bg-gray-100 rounded-full">
+          <ChevronRight className="rotate-180" />
+        </button>
+        <h2 className="text-2xl font-bold">Mis Reservas</h2>
+      </div>
+
+      {reservations.length === 0 ? (
+        <div className="text-center py-12">
+          <div className="bg-gray-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Calendar className="text-gray-400" />
+          </div>
+          <p className="text-gray-500 font-medium">No tienes reservas activas.</p>
+          <button onClick={() => setView('booking')} className="text-emerald-600 text-sm font-bold mt-2">Agendar algo ahora</button>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {reservations.map(res => (
+            <div key={res.id} className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex justify-between items-center">
+              <div className="flex gap-4 items-center">
+                <div className="bg-emerald-100 p-3 rounded-xl text-emerald-600">
+                  {res.game.icon}
+                </div>
+                <div>
+                  <h4 className="font-bold text-gray-800">{res.game.name}</h4>
+                  <p className="text-sm text-gray-500 flex items-center gap-1">
+                    <Calendar size={14} /> {res.date} • <Clock size={14} /> {res.time}
+                  </p>
+                </div>
+              </div>
+              <button 
+                onClick={() => {
+                  setReservations(reservations.filter(r => r.id !== res.id));
+                  showNotice("Reserva cancelada");
+                }}
+                className="p-2 text-gray-300 hover:text-red-500 transition-colors"
+              >
+                <Trash2 size={20} />
+              </button>
+            </div>
+          ))}
+          <div className="p-4 bg-blue-50 rounded-xl mt-8">
+            <p className="text-xs text-blue-700 leading-relaxed">
+              <strong>Nota:</strong> Debes presentarte en El Solar 5 minutos antes de tu turno. Si no llegas a tiempo, el espacio se liberará automáticamente.
+            </p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-white text-gray-800 font-sans">
+      {/* Notificación Flotante */}
+      {notification && (
+        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 animate-bounce">
+          <div className="bg-gray-900 text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-2">
+            <CheckCircle2 size={18} className="text-emerald-400" />
+            <span className="text-sm font-medium">{notification}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Renderizado de Vistas */}
+      {view === 'login' && <LoginView />}
+      {view === 'dashboard' && <Dashboard />}
+      {view === 'booking' && <BookingView />}
+      {view === 'my-reservations' && <ReservationsView />}
+    </div>
+  );
+};
+
+export default App;
